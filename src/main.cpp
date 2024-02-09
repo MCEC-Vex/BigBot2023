@@ -4,14 +4,15 @@
 #include <math.h>
 
 
-pros::Motor topLeft(11, false);
-pros::Motor topRight(1, true);
-pros::Motor botLeft(18, true);
-pros::Motor botRight(20, false);
-
-pros::Motor Catapult(17);
-pros::Motor arm(14); 
-pros::Motor intake(19);
+pros::Motor FrontLeft(18, false);
+pros::Motor FrontRight(13, true);
+pros::Motor BackLeft(14, true);
+pros::Motor BackRight(9, false);
+pros::Motor MidRight(15,false);
+pros::Motor MidLeft(16,false);
+pros::Motor Catapult(19, false);
+pros::Motor Arm(17,false); 
+pros::Motor Intake(20,false);
 
 //pros::Motor Catapult();   //add port
 
@@ -85,46 +86,46 @@ void autonomous() {
 
 	pros::lcd::set_text(1, "THIS IS AUTON!");
 
-	// BASIC MOVEMENTS
-	topLeft.move_velocity(-25);   //forward 
-	topRight.move_velocity(-25);
-	botLeft.move_velocity(25);
-	botRight.move_velocity(25);
-	pros::delay(5000); //5 sec
-	topLeft.move_velocity(0);
-	topRight.move_velocity(0);
-	botLeft.move_velocity(0);
-	botRight.move_velocity(0);
+	// // BASIC MOVEMENTS
+	// FrontLeft.move_velocity(-25);   //forward 
+	// topRight.move_velocity(-25);
+	// botLeft.move_velocity(25);
+	// botRight.move_velocity(25);
+	// pros::delay(5000); //5 sec
+	// topLeft.move_velocity(0);
+	// topRight.move_velocity(0);
+	// botLeft.move_velocity(0);
+	// botRight.move_velocity(0);
 
-	topLeft.move_velocity(25);  //backwards 
-	topRight.move_velocity(25);
-	botLeft.move_velocity(-25);
-	botRight.move_velocity(-25);
-	pros::delay(5000);
-	topLeft.move_velocity(0);
-	topRight.move_velocity(0);
-	botLeft.move_velocity(0);
-	botRight.move_velocity(0);
+	// topLeft.move_velocity(25);  //backwards 
+	// topRight.move_velocity(25);
+	// botLeft.move_velocity(-25);
+	// botRight.move_velocity(-25);
+	// pros::delay(5000);
+	// topLeft.move_velocity(0);
+	// topRight.move_velocity(0);
+	// botLeft.move_velocity(0);
+	// botRight.move_velocity(0);
 
-	topLeft.move_velocity(25);  //turn- counter clockwise 
-	topRight.move_velocity(-25);
-	botLeft.move_velocity(-25);
-	botRight.move_velocity(25);
-	pros::delay(5000);
-	topLeft.move_velocity(0);
-	topRight.move_velocity(0);
-	botLeft.move_velocity(0);
-	botRight.move_velocity(0);
+	// topLeft.move_velocity(25);  //turn- counter clockwise 
+	// topRight.move_velocity(-25);
+	// botLeft.move_velocity(-25);
+	// botRight.move_velocity(25);
+	// pros::delay(5000);
+	// topLeft.move_velocity(0);
+	// topRight.move_velocity(0);
+	// botLeft.move_velocity(0);
+	// botRight.move_velocity(0);
 
-	topLeft.move_velocity(-25);  //turn- counter clockwise 
-	topRight.move_velocity(25);
-	botLeft.move_velocity(25);
-	botRight.move_velocity(-25);
-	pros::delay(5000);
-	topLeft.move_velocity(0);
-	topRight.move_velocity(0);
-	botLeft.move_velocity(0);
-	botRight.move_velocity(0);
+	// topLeft.move_velocity(-25);  //turn- counter clockwise 
+	// topRight.move_velocity(25);
+	// botLeft.move_velocity(25);
+	// botRight.move_velocity(-25);
+	// pros::delay(5000);
+	// topLeft.move_velocity(0);
+	// topRight.move_velocity(0);
+	// botLeft.move_velocity(0);
+	// botRight.move_velocity(0);
 
 	
 }
@@ -144,16 +145,17 @@ void autonomous() {
  */
 void opcontrol() {
 
+	pros::lcd::set_text(1,"READY TO DRIVE");
 	int yMotion;
 	int xMotion;
 
 	while (true)
 	{
 
-		pros::lcd::set_text(1, std::to_string(topLeft.get_position()));
-		pros::lcd::set_text(2, std::to_string(topRight.get_position()));
-		pros::lcd::set_text(3, std::to_string(botLeft.get_position()));
-		pros::lcd::set_text(4, std::to_string(botRight.get_position()));
+		pros::lcd::set_text(1, std::to_string(FrontLeft.get_position()));
+		pros::lcd::set_text(2, std::to_string(FrontRight.get_position()));
+		pros::lcd::set_text(3, std::to_string(BackLeft.get_position()));
+		pros::lcd::set_text(4, std::to_string(BackRight.get_position()));
 
 		pros::Controller master(pros::E_CONTROLLER_MASTER);
 		// driving control code
@@ -165,33 +167,58 @@ void opcontrol() {
 		int right = -xMotion + yMotion; //-power + turn
 		int left = xMotion + yMotion;	// power + turn
 
-		topLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
-		botLeft.move(-left);
-		botRight.move(right);
-		topRight.move(-right);
+		FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
+		FrontLeft.move(-left);
+		BackRight.move(right);
+		BackRight.move(-right);
 
 
-		if (master.get_digital(DIGITAL_R2))
-		{ // runs flywheel while holding R2 down
+		if (master.get_digital(DIGITAL_R1))
+		{ 
 
-			Catapult.move_velocity(30); // Changes flywheel velocity
+			Catapult.move_velocity(30); 
 			pros::lcd::set_text(5, std::to_string(Catapult.get_actual_velocity()));
+			pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
 		}
-		else if(master.get_digital(DIGITAL_UP))
+		else if (master.get_digital(DIGITAL_R2))
 		{
-			arm.move_velocity(30);
-			pros::lcd::set_text(5, std::to_string(arm.get_actual_velocity()));
+			Catapult.move_velocity(-30);
+
+			pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
+		}
+		else{
+			Catapult.move_velocity(0);
+
+		}
+		
+		if(master.get_digital(DIGITAL_L1))
+		{
+			Arm.move_velocity(30);
+			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
+
+		}
+		else if(master.get_digital(DIGITAL_L2))
+		{
+			Arm.move_velocity(-30);
+			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
+		}
+		else{
+			Arm.move_velocity(0);
+		}
+
+		if(master.get_digital(DIGITAL_UP))
+		{
+			Intake.move_velocity(30);
+			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
+
 		}
 		else if(master.get_digital(DIGITAL_DOWN))
 		{
-			arm.move_velocity(30);
-			pros::lcd::set_text(5, std::to_string(arm.get_actual_velocity()));
+			Intake.move_velocity(-30);
+			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
 		}
-		else if(master.get_digital(DIGITAL_L1))
-		{
-			intake.move_velocity(30);
-			pros::lcd::set_text(5, std::to_string(intake.get_actual_velocity()));
-
+		else {
+			Intake.move_velocity(0);
 		}
 
 
