@@ -152,10 +152,10 @@ void opcontrol() {
 	while (true)
 	{
 
-		pros::lcd::set_text(1, std::to_string(FrontLeft.get_position()));
-		pros::lcd::set_text(2, std::to_string(FrontRight.get_position()));
-		pros::lcd::set_text(3, std::to_string(BackLeft.get_position()));
-		pros::lcd::set_text(4, std::to_string(BackRight.get_position()));
+		pros::lcd::set_text(1, "Front Left Motor:" +  std::to_string(FrontLeft.get_position()));
+		pros::lcd::set_text(2, "Front Right Motor:" +std::to_string(FrontRight.get_position()));
+		pros::lcd::set_text(3, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
+		pros::lcd::set_text(4, "Back Right Motor:" + std::to_string(BackRight.get_position()));
 
 		pros::Controller master(pros::E_CONTROLLER_MASTER);
 		// driving control code
@@ -168,38 +168,42 @@ void opcontrol() {
 		int left = xMotion + yMotion;	// power + turn
 
 		FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
-		FrontLeft.move(-left);
+		BackLeft.move(-left);
+		//MidLeft.move(left);
 		BackRight.move(right);
-		BackRight.move(-right);
+		FrontRight.move(-right);
+		// MidRight.move(right);
 
 
 		if (master.get_digital(DIGITAL_R1))
 		{ 
-
-			Catapult.move_velocity(30); 
+			Catapult.move_velocity(100); 
 			pros::lcd::set_text(5, std::to_string(Catapult.get_actual_velocity()));
-			pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
-		}
-		else if (master.get_digital(DIGITAL_R2))
-		{
-			Catapult.move_velocity(-30);
-
 			pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
 		}
 		else{
 			Catapult.move_velocity(0);
 
 		}
+		// else if (master.get_digital(DIGITAL_R2))
+		// {
+		// 	Catapult.move_velocity(100);
+
+		// 	pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
+		// }
+
+
+	//catapult limit before launching 
 		
 		if(master.get_digital(DIGITAL_L1))
 		{
-			Arm.move_velocity(30);
+			Arm.move_velocity(112);
 			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
 
 		}
 		else if(master.get_digital(DIGITAL_L2))
 		{
-			Arm.move_velocity(-30);
+			Arm.move_velocity(-112);
 			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
 		}
 		else{
@@ -208,13 +212,13 @@ void opcontrol() {
 
 		if(master.get_digital(DIGITAL_UP))
 		{
-			Intake.move_velocity(30);
+			Intake.move_velocity(100);
 			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
 
 		}
 		else if(master.get_digital(DIGITAL_DOWN))
 		{
-			Intake.move_velocity(-30);
+			Intake.move_velocity(-100);
 			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
 		}
 		else {
