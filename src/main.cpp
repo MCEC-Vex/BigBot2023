@@ -7,15 +7,15 @@
 
 
 pros::Motor FrontLeft(18, false);
-pros::Motor FrontRight(13, true);
+pros::Motor FrontRight(20, true);
 pros::Motor BackLeft(14, true);
 pros::Motor BackRight(9, false);
 pros::Motor MidRight(15,false);
 pros::Motor MidLeft(16,false);
 pros::Motor Catapult(19, false);
 pros::Motor Arm(17,false); 
-pros::Motor Intake(20,false);
-pros::Rotation RotationSensor(10);
+pros::Motor Intake(13,false);
+pros::Rotation RotationSensor(12);
 pros::ADIDigitalOut Piston('A');
 
 
@@ -191,6 +191,7 @@ void opcontrol() {
 			Intake.move_velocity(0);
 		}
 
+
 	if (master.get_digital(DIGITAL_A))
 		{
 			Piston.set_value(false);
@@ -203,9 +204,6 @@ void opcontrol() {
 	else{
 		Piston.set_value(true);
 		}
-
-
-	
 
 
 
