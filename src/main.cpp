@@ -13,6 +13,8 @@ pros::Motor MidLeft(16,false);
 pros::Motor Catapult(19, false);
 pros::Motor Arm(17,false); 
 pros::Motor Intake(20,false);
+pros::Rotation RotationSensor(10);
+
 
 //pros::Motor Catapult();   //add port
 
@@ -45,6 +47,7 @@ void initialize() {
 	pros::lcd::set_text(1, "Hello PROS User!");
 
 	pros::lcd::register_btn1_cb(on_center_button);
+
 }
 
 /**
@@ -86,46 +89,7 @@ void autonomous() {
 
 	pros::lcd::set_text(1, "THIS IS AUTON!");
 
-	// // BASIC MOVEMENTS
-	// FrontLeft.move_velocity(-25);   //forward 
-	// topRight.move_velocity(-25);
-	// botLeft.move_velocity(25);
-	// botRight.move_velocity(25);
-	// pros::delay(5000); //5 sec
-	// topLeft.move_velocity(0);
-	// topRight.move_velocity(0);
-	// botLeft.move_velocity(0);
-	// botRight.move_velocity(0);
 
-	// topLeft.move_velocity(25);  //backwards 
-	// topRight.move_velocity(25);
-	// botLeft.move_velocity(-25);
-	// botRight.move_velocity(-25);
-	// pros::delay(5000);
-	// topLeft.move_velocity(0);
-	// topRight.move_velocity(0);
-	// botLeft.move_velocity(0);
-	// botRight.move_velocity(0);
-
-	// topLeft.move_velocity(25);  //turn- counter clockwise 
-	// topRight.move_velocity(-25);
-	// botLeft.move_velocity(-25);
-	// botRight.move_velocity(25);
-	// pros::delay(5000);
-	// topLeft.move_velocity(0);
-	// topRight.move_velocity(0);
-	// botLeft.move_velocity(0);
-	// botRight.move_velocity(0);
-
-	// topLeft.move_velocity(-25);  //turn- counter clockwise 
-	// topRight.move_velocity(25);
-	// botLeft.move_velocity(25);
-	// botRight.move_velocity(-25);
-	// pros::delay(5000);
-	// topLeft.move_velocity(0);
-	// topRight.move_velocity(0);
-	// botLeft.move_velocity(0);
-	// botRight.move_velocity(0);
 
 	
 }
@@ -148,6 +112,7 @@ void opcontrol() {
 	pros::lcd::set_text(1,"READY TO DRIVE");
 	int yMotion;
 	int xMotion;
+	int value; 
 
 	while (true)
 	{
@@ -156,7 +121,7 @@ void opcontrol() {
 		pros::lcd::set_text(2, "Front Right Motor:" +std::to_string(FrontRight.get_position()));
 		pros::lcd::set_text(3, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
 		pros::lcd::set_text(4, "Back Right Motor:" + std::to_string(BackRight.get_position()));
-
+		pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(RotationSensor.get_position()));
 		pros::Controller master(pros::E_CONTROLLER_MASTER);
 		// driving control code
 
@@ -169,32 +134,25 @@ void opcontrol() {
 
 		FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
 		BackLeft.move(-left);
-		//MidLeft.move(left);
+		// MidLeft.move(left);
 		BackRight.move(right);
-		FrontRight.move(-right);
+		FrontRight.move(right);
 		// MidRight.move(right);
+
+
 
 
 		if (master.get_digital(DIGITAL_R1))
 		{ 
-			Catapult.move_velocity(100); 
+			Catapult.move_velocity(115); 
 			pros::lcd::set_text(5, std::to_string(Catapult.get_actual_velocity()));
-			pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
 		}
-		else{
-			Catapult.move_velocity(0);
-
+		else
+		{
+			Catapult.move_velocity(0); 
 		}
-		// else if (master.get_digital(DIGITAL_R2))
-		// {
-		// 	Catapult.move_velocity(100);
-
-		// 	pros::lcd::set_text(5,"Catapult Velocity:" + std::to_string(Catapult.get_actual_velocity()));
-		// }
 
 
-	//catapult limit before launching 
-		
 		if(master.get_digital(DIGITAL_L1))
 		{
 			Arm.move_velocity(112);
@@ -207,8 +165,9 @@ void opcontrol() {
 			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
 		}
 		else{
-			Arm.move_velocity(0);
+			Arm.move_velocity(0);                                                        
 		}
+
 
 		if(master.get_digital(DIGITAL_UP))
 		{
