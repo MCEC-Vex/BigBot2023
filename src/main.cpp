@@ -4,6 +4,9 @@
 #include <math.h>
 #include <string>
 #include <vector>
+#include "okapi/api.hpp"
+#include "okapi/api/chassis/controller/chassisControllerPid.hpp"
+using namespace okapi;
 
 
 pros::Motor FrontLeft(18, false);
@@ -17,6 +20,27 @@ pros::Motor Arm(17,false);
 pros::Motor Intake(13,false);
 pros::Rotation RotationSensor(12);
 pros::ADIDigitalOut Piston('A');
+
+
+//pros::Motor Catapult();   //add port
+
+/**
+ * A callback function for LLEMU's center button.
+ *
+ * When this callback is fired, it will toggle line 2 of the LCD text between
+ * "I was pressed!" and nothing.
+
+
+/**
+ * Runs initialization code. This occurs as soon as the program is started.
+ *
+ * All other competition modes are blocked by initialize; it is recommended
+ * to keep execution time for this mode under a few seconds.
+
+
+
+
+
 
 
 //pros::Motor Catapult();   //add port
@@ -92,10 +116,37 @@ void autonomous() {
 
 	pros::lcd::set_text(1, "THIS IS AUTON!");
 
+	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
+			.withMotors(18, -20, -9, 14)  // front right and back right were reversed in order to go forward   
+			// change P then D first then I only if necessary  
+			//start with P I and D with zero 
+			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0
+		//0.5 = 
+				{0.001, 0, 0}, // Distance controller gains 
+				{0.000, 0, 0}, // turn controller gains
+				{0.00, 0, 0.0000}	// Angle controller (helps bot drive straight)
+				)
+			.withMaxVelocity(115)
+			// Green gearset, 3 inch wheel diam, 9 inch wheel track
+
+			.withDimensions(AbstractMotor::gearset::green, {{16_in, 10_in}, imev5GreenTPR})
+			.build();
+
+	pros::lcd::set_text(1, "THIS IS AUTON!");
+	bot->moveDistance(-4_ft); //drive forward 33 inches, turn 90 degrees, 77 inches 
+	Arm.tare_position();
+	Arm.move_absolute(50,100);
+	pros::delay(2000);
+	Catapult.tare_position();
+	Catapult.move_absolute(50,100);
 
 
 	
 }
+
+
+
+	
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -112,11 +163,24 @@ void autonomous() {
  */
 void opcontrol() {
 
+
+pros::Motor FrontLeft(18, false);
+pros::Motor FrontRight(20, true);
+pros::Motor BackLeft(14, true);
+pros::Motor BackRight(9, false);
+pros::Motor MidRight(15,false);
+pros::Motor MidLeft(16,false);
+pros::Motor Catapult(19, false);
+pros::Motor Arm(17,false); 
+pros::Motor Intake(13,false);
+// pros::Rotation RotationSensor(12);
+pros::ADIDigitalOut Piston('A');
+
 	pros::lcd::set_text(1,"READY TO DRIVE");
 	int yMotion;
 	int xMotion;
 	int value; 
-	RotationSensor.reset();
+	// RotationSensor.reset();
 
 	while (true)
 	{
@@ -125,7 +189,7 @@ void opcontrol() {
 		pros::lcd::set_text(2, "Front Right Motor:" +std::to_string(FrontRight.get_position()));
 		pros::lcd::set_text(3, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
 		pros::lcd::set_text(4, "Back Right Motor:" + std::to_string(BackRight.get_position()));
-		pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(RotationSensor.get_position()));
+		pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(Catapult.get_position()));
 		pros::Controller master(pros::E_CONTROLLER_MASTER);
 		// driving control code
 
@@ -148,10 +212,10 @@ void opcontrol() {
 
 		if (master.get_digital(DIGITAL_R1))
 		{ 
-			pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
+			// pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
 			pros::lcd::set_text(6, std::to_string(Catapult.get_actual_velocity()));
 			Catapult.move_velocity(115); 
-			pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
+			// pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
 			pros::lcd::set_text(6, std::to_string(Catapult.get_actual_velocity()));
 		}
 		else
@@ -196,11 +260,6 @@ void opcontrol() {
 		{
 			Piston.set_value(false);
 		}
-	else if (master.get_digital(DIGITAL_B))
-		{
-			Piston.set_value(true);
-			pros::delay(500);
-		}
 	else{
 		Piston.set_value(true);
 		}
@@ -210,3 +269,12 @@ void opcontrol() {
 		pros::delay(20);
 	}
 }
+
+
+
+
+	
+
+
+
+
