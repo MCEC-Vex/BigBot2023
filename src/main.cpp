@@ -2,6 +2,8 @@
 #include "pros/misc.h"
 #include "pros/motors.hpp"
 #include <math.h>
+#include <string>
+#include <vector>
 
 
 pros::Motor FrontLeft(18, false);
@@ -14,6 +16,7 @@ pros::Motor Catapult(19, false);
 pros::Motor Arm(17,false); 
 pros::Motor Intake(20,false);
 pros::Rotation RotationSensor(10);
+pros::ADIDigitalOut Piston('A');
 
 
 //pros::Motor Catapult();   //add port
@@ -113,6 +116,7 @@ void opcontrol() {
 	int yMotion;
 	int xMotion;
 	int value; 
+	RotationSensor.reset();
 
 	while (true)
 	{
@@ -136,7 +140,7 @@ void opcontrol() {
 		BackLeft.move(-left);
 		// MidLeft.move(left);
 		BackRight.move(right);
-		FrontRight.move(right);
+		FrontRight.move(-right);
 		// MidRight.move(right);
 
 
@@ -144,8 +148,11 @@ void opcontrol() {
 
 		if (master.get_digital(DIGITAL_R1))
 		{ 
+			pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
+			pros::lcd::set_text(6, std::to_string(Catapult.get_actual_velocity()));
 			Catapult.move_velocity(115); 
-			pros::lcd::set_text(5, std::to_string(Catapult.get_actual_velocity()));
+			pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
+			pros::lcd::set_text(6, std::to_string(Catapult.get_actual_velocity()));
 		}
 		else
 		{
@@ -183,6 +190,23 @@ void opcontrol() {
 		else {
 			Intake.move_velocity(0);
 		}
+
+	if (master.get_digital(DIGITAL_A))
+		{
+			Piston.set_value(false);
+		}
+	else if (master.get_digital(DIGITAL_B))
+		{
+			Piston.set_value(true);
+			pros::delay(500);
+		}
+	else{
+		Piston.set_value(true);
+		}
+
+
+	
+
 
 
 		pros::delay(20);
