@@ -9,13 +9,7 @@
 using namespace okapi;
 
 
-pros::Motor FrontLeft(18, false);
-pros::Motor FrontRight(20, true);
-pros::Motor BackLeft(14, true);
-pros::Motor BackRight(9, false);
-pros::Motor MidRight(15,false);
-pros::Motor MidLeft(16,false);
-pros::Motor Catapult(19, false);
+pros::Motor Catapult(7, false);
 pros::Motor Arm(17,false); 
 pros::Motor Intake(13,false);
 pros::Rotation RotationSensor(12);
@@ -170,27 +164,27 @@ pros::Motor BackLeft(14, true);
 pros::Motor BackRight(9, false);
 pros::Motor MidRight(15,false);
 pros::Motor MidLeft(16,false);
-pros::Motor Catapult(19, false);
+pros::Motor Catapult(7, false);
 pros::Motor Arm(17,false); 
 pros::Motor Intake(13,false);
-// pros::Rotation RotationSensor(12);
+ pros::Rotation RotationSensor(12);
 pros::ADIDigitalOut Piston('A');
 
 	pros::lcd::set_text(1,"READY TO DRIVE");
 	int yMotion;
 	int xMotion;
 	int value; 
-	// RotationSensor.reset();
+
 
 	while (true)
 	{
-
 		pros::lcd::set_text(1, "Front Left Motor:" +  std::to_string(FrontLeft.get_position()));
 		pros::lcd::set_text(2, "Front Right Motor:" +std::to_string(FrontRight.get_position()));
 		pros::lcd::set_text(3, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
 		pros::lcd::set_text(4, "Back Right Motor:" + std::to_string(BackRight.get_position()));
-		pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(Catapult.get_position()));
+		pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(RotationSensor.get_angle()));
 		pros::Controller master(pros::E_CONTROLLER_MASTER);
+
 		// driving control code
 
 		yMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // ik this looks wrong, but it works
@@ -209,30 +203,35 @@ pros::ADIDigitalOut Piston('A');
 
 
 
+        if (master.get_digital(DIGITAL_R1))
+        { 
+			RotationSensor.set_data_rate(0);   	
+          //   pros::lcd::set_text(5, std::to_string(RotationSensor.get_angle()));
+          //  pros::lcd::set_text(6, std::to_string(Catapult.get_position()));
+            Catapult.move_velocity(200); 
+          //   pros::lcd::set_text(5, std::to_string(RotationSensor.get_angle()));
+         //   pros::lcd::set_text(6, std::to_string(Catapult.get_position()));	 
+        }
+        else if (RotationSensor.get_angle() <= 34000) { //3050 ->2700(no data rate)-> 3565 (data rate)
+		//	RotationSensor.set_data_rate(0);  
+            Catapult.move_velocity(200);
 
-		if (master.get_digital(DIGITAL_R1))
-		{ 
-			// pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
-			pros::lcd::set_text(6, std::to_string(Catapult.get_actual_velocity()));
-			Catapult.move_velocity(115); 
-			// pros::lcd::set_text(5, std::to_string(RotationSensor.get_position()));
-			pros::lcd::set_text(6, std::to_string(Catapult.get_actual_velocity()));
-		}
-		else
-		{
-			Catapult.move_velocity(0); 
-		}
-
+        }
+        else
+        {   
+			RotationSensor.set_data_rate(55);         
+            Catapult.move_velocity(0);
+        }
 
 		if(master.get_digital(DIGITAL_L1))
 		{
-			Arm.move_velocity(112);
+			Arm.move_velocity(-112);
 			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
 
 		}
 		else if(master.get_digital(DIGITAL_L2))
 		{
-			Arm.move_velocity(-112);
+			Arm.move_velocity(112);
 			pros::lcd::set_text(5,"Arm Velocity:" + std::to_string(Arm.get_actual_velocity()));
 		}
 		else{
@@ -240,20 +239,33 @@ pros::ADIDigitalOut Piston('A');
 		}
 
 
-		if(master.get_digital(DIGITAL_UP))
+		if(master.get_digital(DIGITAL_R2))
 		{
-			Intake.move_velocity(100);
+			Intake.move_velocity(-200);
 			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
 
 		}
 		else if(master.get_digital(DIGITAL_DOWN))
 		{
-			Intake.move_velocity(-100);
+			Intake.move_velocity(200);
+			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
+
+		}					
+		else 
+		{
+			Intake.move_velocity(0);
+		}
+
+
+
+/* 		if(master.get_digital(DIGITAL_DOWN))
+		{
+			Intake.move_velocity(200);
 			pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
 		}
 		else {
 			Intake.move_velocity(0);
-		}
+		} */
 
 
 	if (master.get_digital(DIGITAL_A))
@@ -269,12 +281,3 @@ pros::ADIDigitalOut Piston('A');
 		pros::delay(20);
 	}
 }
-
-
-
-
-	
-
-
-
-
