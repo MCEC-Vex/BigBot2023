@@ -4,9 +4,9 @@
 #include <math.h>
 #include <string>
 #include <vector>
-// #include "okapi/api.hpp"
-// #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
-// using namespace okapi;
+#include "okapi/api.hpp"
+#include "okapi/api/chassis/controller/chassisControllerPid.hpp"
+using namespace okapi;
 pros::Motor Catapult(7, false);
 pros::Motor Arm(17,false); 
 pros::Motor Intake(13,false);
@@ -106,83 +106,49 @@ void competition_initialize() {}
 
 void autonomous() {
 
-	// std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
-	// 		.withMotors(18, -20, -9, 14)  // front right and back right were reversed in order to go forward   
-	// 		// change P then D first then I only if necessary  
-	// 		//start with P I and D with zero 
-	// 		.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0
-	// 	//0.5 = 
-	// 			{0.001, 0, 0}, // Distance controller gains 
-	// 			{0.001, 0, 0}, // turn controller gains
-	// 			{0.0, 0, 0.0000}	// Angle controller (helps bot drive straight)
-	// 			)
-	// 		.withMaxVelocity(200)
-	// 		// Green gearset, 3 inch wheel diam, 9 inch wheel track
+	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
+			.withMotors(18, -20, -9, 14)  // front right and back right were reversed in order to go forward   
+			// change P then D first then I only if necessary  
+			//start with P I and D with zero 
+			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0
+		//0.5 = 
+				{0.001, 0, 0}, // Distance controller gains 
+				{0.001, 0, 0}, // turn controller gains
+				{0.0, 0, 0.0000}	// Angle controller (helps bot drive straight)
+				)
+			.withMaxVelocity(200)
+			// Green gearset, 3 inch wheel diam, 9 inch wheel track
 
-	// 		.withDimensions(AbstractMotor::gearset::green, {{5_in, 15_in}, imev5GreenTPR})
-	// 		.build();
-	// pros::lcd::set_text(1, "THIS IS AUTON!");
-	// bot->moveDistance(-8_in);
-	// bot->turnAngle(70_deg);
-	// bot->moveDistance(16_in);
-	// bot->turnAngle(-115_deg);
-	// bot->moveDistance(9_in);
-	
-	Arm.move_absolute(700,150);
+			.withDimensions(AbstractMotor::gearset::green, {{5_in, 15_in}, imev5GreenTPR})
+			.build();
+	pros::lcd::set_text(1, "THIS IS AUTON!");
+	bot->moveDistance(-8_in);
+	bot->turnAngle(70_deg);
+	bot->moveDistance(16_in);
+	bot->turnAngle(-115_deg);
+	bot->moveDistance(9_in);
+
+for(int t=0; t<= 10; t++)
+{
+	Catapult.tare_position();
+	Catapult.move_absolute(2200,200);
 	Intake.move_velocity(-200);
+	Arm.move_absolute(700,150);
 	pros::delay(1000);
 
-
-	if (RotationSensor.get_angle() <= 33998) { //3050 ->2700(no data rate)-> 3565 (data rate)
-            Catapult.move_velocity(200);
-	} else {
-	for(int i= 0 ; i>= -1500 ; i=i-50)
+	for(int i= 0 ; i>= -700 ; i=i-70)
 	{
-		Intake.move_velocity(-100);
+		Intake.move_velocity(-150);
 		Arm.move_absolute(i,200);
-		pros::delay(200);
-		pros::lcd::set_text(4, "Arm2:" +  std::to_string(Arm.get_position()));
+		pros::delay(500);
+		pros::lcd::set_text(4, "Arm:" +  std::to_string(Arm.get_position()));
 		
 	}
-		pros::delay(1000);
-        Catapult.move_velocity(200);
-	}
+	Arm.move_absolute(700,150);
+
+}
 
 
-
-		
-	// for(int i=0; i<= 5;i++){ //this works 5 times
-	// 	Arm.move_absolute(100,100); // Arm goes down
-	// 	pros::lcd::set_text(4, "Go up" +  std::to_string(i));
-	// 	Intake.move_velocity(-200); // Take the ball
-	// 	pros::delay(2000); // Have a delay so that the function after works
-	// 	Arm.move_absolute(-100,50); // Arm goes up
-	// 	pros::lcd::set_text(4, "Go down" +  std::to_string(i));
-	// 	Intake.move_velocity(-200); // Intake to put on catapult
-	// 	pros::delay(2000);
-	// 	pros::lcd::set_text(4, "Loop:" +  std::to_string(i));
-		
-	// 	//End
-	// }
-
-
-
-
-
-	// for(int i= 0 ; i>= -800 ; i=i-50)
-	// {
-	// 	Intake.move_velocity(-100);
-	// 	Arm.move_absolute(i,200);
-	// 	pros::delay(200);
-	// 	pros::lcd::set_text(4, "Arm2:" +  std::to_string(Arm.get_position()));
-
-	// }
-
-
-	// Intake.move_velocity(112);
-	// Catapult.tare_position();
-	// Catapult.move_absolute(1200,100) 
-	//  drive forward 33 inches, turn 90 degrees, 77 inches 
 
 
 	
@@ -256,24 +222,22 @@ pros::ADIDigitalOut Piston('A');
 		FrontRight.move(-right);
 		// MidRight.move(right);
 
-
-
-        if (master.get_digital(DIGITAL_R1))
-        { 
-			RotationSensor.set_data_rate(0);   	
-            Catapult.move_velocity(200); 
-			pros::lcd::set_text(5, std::to_string(RotationSensor.get_angle()));	 
-        }
-		else if (RotationSensor.get_angle() <= 33998) { //3050 ->2700(no data rate)-> 3565 (data rate)
-            Catapult.move_velocity(200);
-
-        }
-		// value to launch (34000) is value due to catapult starting position not being zero 
-        else
-        {   
-			// RotationSensor.set_data_rate(55);         
-            Catapult.move_velocity(0);
-        }
+		if (master.get_digital(DIGITAL_R1))
+		{
+			RotationSensor.set_data_rate(0);
+			Catapult.move_velocity(200);
+			pros::lcd::set_text(5, std::to_string(RotationSensor.get_angle()));
+		}
+		else if (RotationSensor.get_angle() <= 33998)
+		{ // 3050 ->2700(no data rate)-> 3565 (data rate)
+			Catapult.move_velocity(200);
+		}
+		// value to launch (34000) is value due to catapult starting position not being zero
+		else
+		{
+			// RotationSensor.set_data_rate(55);
+			Catapult.move_velocity(0);
+		}
 
 
 		if(master.get_digital(DIGITAL_L1))
