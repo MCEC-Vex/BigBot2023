@@ -287,7 +287,7 @@ class Imu {
 	 * EAGAIN - The sensor is still calibrating
 	 *
 	 * \param  port
-	 * 				 The V5 Inertial Sensor port number from 1-21
+	 * The V5 Inertial Sensor port number from 1-21
 	 * \return 1 if the operation was successful or PROS_ERR if the operation
 	 * failed, setting errno.
 	 */
