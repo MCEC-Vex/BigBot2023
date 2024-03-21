@@ -181,17 +181,21 @@ void autonomous()
 void opcontrol()
 {
 
-pros::Motor FrontLeft(18, false);
-pros::Motor FrontRight(20, true);
-pros::Motor BackLeft(14, true);
-pros::Motor BackRight(9, false);
-pros::Motor MidRight(15,false);
-pros::Motor MidLeft(16,false);
-pros::Motor Catapult(7, false);
-pros::Motor Arm(17,false); 
-pros::Motor Intake(13,false);
-pros::Rotation RotationSensor(12);
-pros::ADIDigitalOut Piston('A');
+	pros::Motor FrontLeft(18, false);
+	pros::Motor FrontRight(20, true);
+	pros::Motor BackLeft(14, true);
+	pros::Motor BackRight(9, false);
+	pros::Motor MidRight(15, false);
+	pros::Motor MidLeft(16, false);
+	pros::Motor Catapult(7, false);
+	pros::Motor Arm(17, false);
+	pros::Motor Intake(13, false);
+	pros::Rotation RotationSensor(12);
+	pros::ADIDigitalOut Piston('A');
+	pros::Imu imu_sensor(19);
+	// imu_sensor.reset();
+
+
 
 	pros::lcd::set_text(1, "READY TO DRIVE");
 	int yMotion;
@@ -202,16 +206,31 @@ pros::ADIDigitalOut Piston('A');
 	Catapult.tare_position();
 	Arm.tare_position();
 
-//-33 Arm encoder units for intake 
+	//-33 Arm encoder units for intake
+
+
+	imu_sensor.tare_yaw();
+	imu_sensor.tare_roll();
+	imu_sensor.tare_pitch();
+
 	while (true)
 	{
-		pros::lcd::set_text(1, "Arm:" +  std::to_string(Arm.get_position()));
-		pros::lcd::set_text(2, "Front Right Motor:" +std::to_string(FrontRight.get_position()));
-		pros::lcd::set_text(3, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
-		pros::lcd::set_text(4, "Back Right Motor:" + std::to_string(BackRight.get_position()));
-	    pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(RotationSensor.get_position()));
-		pros::lcd::set_text(6, "Catapult: " + std::to_string(Catapult.get_position()));
-	
+
+	pros::lcd::set_text(1, "YAW: " + std::to_string(imu_sensor.get_yaw()));
+	pros::lcd::set_text(2, "PITCH: " + std::to_string(imu_sensor.get_roll()));
+	pros::lcd::set_text(3, "ROLL: " + std::to_string(imu_sensor.get_pitch()));
+
+	// pros::lcd::set_text(2, "IMU quaternion y: " + std::to_string(qt.y));
+	// pros::lcd::set_text(3, "IMU quaternion z: " + std::to_string(qt.z));
+	// pros::lcd::set_text(4, "IMU quaternion w: " + std::to_string(qt.w));
+
+		// pros::lcd::set_text(1, "Arm:" + std::to_string(Arm.get_position()));
+		// pros::lcd::set_text(2, "Front Right Motor:" + std::to_string(FrontRight.get_position()));
+		// pros::lcd::set_text(3, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
+		// pros::lcd::set_text(4, "Back Right Motor:" + std::to_string(BackRight.get_position()));
+		// pros::lcd::set_text(5, "Rotation Sensor: " + std::to_string(RotationSensor.get_position()));
+		// pros::lcd::set_text(6, "Catapult: " + std::to_string(Catapult.get_position()));
+
 
 		// driving control code
 
