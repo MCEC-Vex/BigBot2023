@@ -7,11 +7,12 @@
 #include "okapi/api.hpp"
 #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
 using namespace okapi;
-pros::Motor Catapult(7, false);
+pros::Motor Catapult(1, false);
 pros::Motor Arm(17, false);
 pros::Motor Intake(13, false);
 pros::Rotation RotationSensor(12);
 pros::ADIDigitalOut Piston('A');
+pros::Imu imu_sensor(19);
 
 // pros::Motor Catapult();   //add port
 
@@ -124,46 +125,80 @@ void autonomous()
 	 .build();
 	pros::lcd::set_text(1, "THIS IS AUTON!");
 
-	// Change the code here for auton in match as the big bot will be at the other side of the field
-	bot->moveDistance(-7.9_in);
-	bot->turnAngle(70_deg);
-	bot->moveDistance(18_in);
-	bot->turnAngle(-130_deg);
-	bot->moveDistance(9.5_in);
+	// // Change the code here for auton in match as the big bot will be at the other side of the field
+	// bot->moveDistance(-7.9_in);
+	// bot->turnAngle(70_deg);
+	// bot->moveDistance(18_in);
+	// bot->turnAngle(-130_deg);
+	// bot->moveDistance(9.5_in);
 
 	// Code from here is really important for the autonomous
+
+	bot->moveDistance(22_in);
+	bot->turnAngle(-50_deg);
+
+	while(imu_sensor.get_rotation() <= -50.0)
+	{
+		int value = 50 - abs(imu_sensor.get_rotation());
+		bot->turnAngle(-round(value)*1_deg);
+	}
+	while(imu_sensor.get_rotation() >= -50.0)
+	{
+    	bot->turnAngle(-10_deg);
+		std::string text = "IMU rotation: " + std::to_string(imu_sensor.get_rotation());
+		pros::lcd::set_text(0, text.c_str());
+		if(imu_sensor.get_rotation() <= -66 && imu_sensor.get_rotation() >= -70)
+		{
+			break;
+		}
+	}
+
+	// while(imu_sensor.get_rotation() >= -50.0)
+	// {
+	// 	int value = 50 - abs(imu_sensor.get_rotation());
+	// 	bot->turnAngle(-value*1_deg)
+	// 	std::string text = "IMU rotation: " + std::to_string(imu_sensor.get_rotation());
+	// 	pros::lcd::set_text(0, text.c_str());
+	// 	if(imu_sensor.get_rotation() <= -45 && imu_sensor.get_rotation() >= -55)
+	// 	{
+	// 		break;
+	// 	}
+	// }
+
+	bot->moveDistance(22_in);
 	while (true) // Run Until the end of the autonomous period
 	{
-		Arm.move_absolute(700, 150); // The Arm for intake goes down
-		Intake.move_velocity(-200); // The intake starts spinning
-		pros::delay(50); // Wait for the intake to start spinning
-
-		if (RotationSensor.get_angle() < 33998) // If the rotation sensor is less than 33998
+		if(RotationSensor.get_angle() < 33998) // If the rotation sensor is less than 33998
 		{
 			Catapult.move_velocity(200); // The catapult goes down
 		}
 		else // If the rotation sensor is greater than 33998
 		{
 			Catapult.move_velocity(0); // The catapult stops
+			break;
 		}
-
-		if (RotationSensor.get_angle() >= 33998) // If the Rotation is more the or equal to 33998
-		{
-			pros::delay(50); // Wait 
-			for (int i = 0; i >= -1500; i = i - 100) // Slowly (exponentially) move the arm up
-			{
-				Intake.move_velocity(-100);
-				Arm.move_absolute(i, 200);
-				pros::delay(200);
-				pros::lcd::set_text(4, "Arm2:" + std::to_string(Arm.get_position()));
-			}
-			pros::delay(50); // Wait for the triball to on Catapult
-			Catapult.move_velocity(200); // Lauch the TriBall to other side
-			pros::delay(50); // Wait for the triball to launch
-		}
-		pros::lcd::set_text(5, std::to_string(RotationSensor.get_angle()));
 	}
-}
+	
+	pros::delay(500);
+	bot->moveDistance(1_in);
+	Arm.move_absolute(700, 300); // The Arm for intake goes down
+	Intake.move_velocity(-200); // The intake starts spinning
+	pros::delay(50); // Wait for the intake to start spinning
+
+	for (int i = 0; i >= -1500; i = i - 100) // Slowly (exponentially) move the arm up
+	{
+		Intake.move_velocity(-100);
+		Arm.move_absolute(i, 200);
+		pros::delay(200);
+		pros::lcd::set_text(4, "Arm2:" + std::to_string(Arm.get_position()));
+	}
+
+		Catapult.move_velocity(200); // The catapult goes down
+		pros::delay(200);
+		Catapult.move_velocity(0); // The catapult goes down
+
+	}
+	// }
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -187,7 +222,7 @@ void opcontrol()
 	pros::Motor BackRight(9, false);
 	pros::Motor MidRight(15, false);
 	pros::Motor MidLeft(16, false);
-	pros::Motor Catapult(7, false);
+	pros::Motor Catapult(1, false);
 	pros::Motor Arm(17, false);
 	pros::Motor Intake(13, false);
 	pros::Rotation RotationSensor(12);
