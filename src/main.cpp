@@ -454,5 +454,3 @@ void opcontrol()
 		pros::delay(20);
 	}
 }
-message.txt
-14 KB
