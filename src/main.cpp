@@ -105,10 +105,9 @@ void competition_initialize() {}
  *
  */
 
-void autonomous()
-{
-	pros::Rotation RotationSensor(12);
 
+// This is PID 
+// !Don't Touch it
 	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()
 	 .withMotors(18, -20, -9, 14) // front right and back right were reversed in order to go forward
 	 // change P then D first then I only if necessary
@@ -123,50 +122,11 @@ void autonomous()
 	 // Green gearset, 3 inch wheel diam, 9 inch wheel track
 	 .withDimensions(AbstractMotor::gearset::green, {{5_in, 15_in}, imev5GreenTPR})
 	 .build();
-	pros::lcd::set_text(1, "THIS IS AUTON!");
 
-	// // Change the code here for auton in match as the big bot will be at the other side of the field
-	// bot->moveDistance(-7.9_in);
-	// bot->turnAngle(70_deg);
-	// bot->moveDistance(18_in);
-	// bot->turnAngle(-130_deg);
-	// bot->moveDistance(9.5_in);
-
-	// Code from here is really important for the autonomous
-
-	bot->moveDistance(22_in);
-	bot->turnAngle(-50_deg);
-
-	while(imu_sensor.get_rotation() <= -50.0)
-	{
-		int value = 50 - abs(imu_sensor.get_rotation());
-		bot->turnAngle(-round(value)*1_deg);
-	}
-	while(imu_sensor.get_rotation() >= -50.0)
-	{
-    	bot->turnAngle(-10_deg);
-		std::string text = "IMU rotation: " + std::to_string(imu_sensor.get_rotation());
-		pros::lcd::set_text(0, text.c_str());
-		if(imu_sensor.get_rotation() <= -66 && imu_sensor.get_rotation() >= -70)
-		{
-			break;
-		}
-	}
-
-	// while(imu_sensor.get_rotation() >= -50.0)
-	// {
-	// 	int value = 50 - abs(imu_sensor.get_rotation());
-	// 	bot->turnAngle(-value*1_deg)
-	// 	std::string text = "IMU rotation: " + std::to_string(imu_sensor.get_rotation());
-	// 	pros::lcd::set_text(0, text.c_str());
-	// 	if(imu_sensor.get_rotation() <= -45 && imu_sensor.get_rotation() >= -55)
-	// 	{
-	// 		break;
-	// 	}
-	// }
-
-	bot->moveDistance(22_in);
-	while (true) // Run Until the end of the autonomous period
+// This set the Catapult's Position
+void setCatapult(){
+	pros::Rotation RotationSensor(12);
+		while (true) // Run Until the end of the autonomous period
 	{
 		if(RotationSensor.get_angle() < 33998) // If the rotation sensor is less than 33998
 		{
@@ -178,26 +138,103 @@ void autonomous()
 			break;
 		}
 	}
-	
-	pros::delay(500);
-	bot->moveDistance(1_in);
-	Arm.move_absolute(700, 300); // The Arm for intake goes down
-	Intake.move_velocity(-200); // The intake starts spinning
-	pros::delay(50); // Wait for the intake to start spinning
+}
 
-	for (int i = 0; i >= -1500; i = i - 100) // Slowly (exponentially) move the arm up
+// Ths function is to get the ball into the Catapult
+void getBall(){
+	setCatapult(); // Set the catapult
+	Intake.move_velocity(-200); // The intake starts
+	Arm.move_absolute(700, 200); // The Arm for intake goes down
+	pros::delay(500); // Wait for the arm to go down
+	for (int i = 0; i >= -1800; i = i - 100) // Slowly (exponentially) move the arm up
 	{
 		Intake.move_velocity(-100);
 		Arm.move_absolute(i, 200);
 		pros::delay(200);
 		pros::lcd::set_text(4, "Arm2:" + std::to_string(Arm.get_position()));
 	}
+}
 
-		Catapult.move_velocity(200); // The catapult goes down
-		pros::delay(200);
-		Catapult.move_velocity(0); // The catapult goes down
+// This function is to turn the bot to the left
+void negativeTurn(int degrees)
+	{
+    imu_sensor.tare_rotation();
+		bot->turnAngle(-degrees*1_deg);
 
+	if(imu_sensor.get_rotation() <= -degrees)
+	{
+		int value = degrees - abs(imu_sensor.get_rotation());
+		bot->turnAngle(-round(value)*1_deg);
 	}
+	while(imu_sensor.get_rotation() >= -degrees)
+	{
+    	bot->turnAngle(-10_deg);
+		std::string text = "IMU rotation: " + std::to_string(imu_sensor.get_rotation());
+		pros::lcd::set_text(0, text.c_str());
+		if(imu_sensor.get_rotation() >= -(degrees))
+		{
+			break;
+		}
+	}
+}
+
+// This function is to turn the bot to the right
+void positiveTurn(int degrees)
+{
+	imu_sensor.tare_rotation();
+	setCatapult(); // Set the catapult
+	bot->turnAngle(degrees*1_deg);
+
+	if(round(imu_sensor.get_rotation()) <= degrees)
+	{
+		int value = abs(imu_sensor.get_rotation()) - degrees;
+		bot->turnAngle(-round(value)*1_deg);
+	}
+	while(round(imu_sensor.get_rotation()) <= degrees)
+	{
+    	bot->turnAngle(10_deg);
+		std::string text = "IMU rotation: " + std::to_string(imu_sensor.get_rotation());
+		pros::lcd::set_text(0, text.c_str());
+		if(imu_sensor.get_rotation() >= degrees)
+		{
+			break;
+		}
+	}
+}
+
+
+void autonomous()
+{
+	pros::Rotation RotationSensor(12);
+
+	pros::lcd::set_text(1, "THIS IS AUTON!");
+
+	setCatapult();
+	bot->moveDistance(24_in);
+	negativeTurn(80);
+
+	
+	pros::delay(50); // Wait for the intake to start spinning
+	bot->moveDistance(18_in);
+	pros::delay(50); // Wait for the ball to be in the intake
+	
+	pros::delay(50);
+	getBall();
+	negativeTurn(130);
+
+	Catapult.move_velocity(300); // The catapult goes down
+	pros::delay(1000); // Wait for launch
+	positiveTurn(95);
+
+	bot->moveDistance(9_in);
+	getBall();
+
+	negativeTurn(120);
+
+	Catapult.move_velocity(300); // The catapult goes down
+	pros::delay(1000); // Wait for launch
+	pros::lcd::set_text(5, std::to_string('The Program ends'));
+}
 	// }
 
 /**
