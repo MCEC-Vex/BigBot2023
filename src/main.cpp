@@ -110,7 +110,7 @@ void competition_initialize() {}
 		 )
 	 .withMaxVelocity(200)
 	 // Green gearset, 3 inch wheel diam, 9 inch wheel track
-	 .withDimensions(AbstractMotor::gearset::green, {{5_in, 15_in}, imev5GreenTPR})
+	 .withDimensions(AbstractMotor::gearset::green, {{4_in, 14.8_in}, imev5GreenTPR})
 	 .build();
 
 // This set the Catapult's Position
