@@ -305,6 +305,7 @@ void autonomous()
 
 	// ! Call the blueAuton function when needed
 	// TODO: Code the blueAuton function
+   
 	// blueAuton();
 }
 
@@ -324,15 +325,16 @@ void autonomous()
 void opcontrol()
 {
 
-	pros::Motor FrontLeft(18, false);
-	pros::Motor FrontRight(20, true);
-	pros::Motor BackLeft(14, true);
-	pros::Motor BackRight(9, false);
-	pros::Motor MidRight(15, false);
+	pros::Motor FrontLeft(18, false);  //counterclockwise
+	pros::Motor FrontRight(20, true);  //! clockwise   I am guessing that it is true in order for rotation  
+	pros::Motor BackLeft(14, true);  //!clockwise 
+	pros::Motor BackRight(9, false);  //counterclockwise 
+	pros::Motor MidRight(15, false);  //
 	pros::Motor MidLeft(16, false);
 	pros::Motor Catapult(1, false);
 	pros::Motor Arm(17, false);
 	pros::Motor Intake(13, false);
+	pros::Motor Test(5,true);
 	pros::Rotation RotationSensor(12);
 	pros::ADIDigitalOut Piston('A');
 	pros::Imu imu_sensor(19);
@@ -377,17 +379,26 @@ void opcontrol()
 
 		// driving control code
 
-		yMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // ik this looks wrong, but it works
-		xMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+		xMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // ik this looks wrong, but it works
+		yMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
-		int right = -xMotion + yMotion; //-power + turn
-		int left = xMotion + yMotion;	// power + turn
+		int right = -yMotion + xMotion; //-power + turn
+		int left = yMotion + xMotion;	// power + turn
 
-		FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
-		BackLeft.move(-left);
-		// MidLeft.move(left);
-		BackRight.move(right);
-		FrontRight.move(-right);
+		pros::lcd::set_text(3, "Y:" + std::to_string(yMotion));
+		pros::lcd::set_text(4, "X: " + std::to_string(xMotion));
+		pros::lcd::set_text(5, "right" + std::to_string(right));
+		pros::lcd::set_text(6, "left" + std::to_string(left));
+		Test.move(right);   //clockwise when true //counterclockwise when false 
+
+
+
+
+		// FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
+		// BackLeft.move(-left);
+		// // MidLeft.move(left);
+		// BackRight.move(right);
+		// FrontRight.move(-right);
 		// MidRight.move(right);
 
 		if (master.get_digital(DIGITAL_R1))
