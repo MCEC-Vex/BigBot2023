@@ -7,12 +7,12 @@
 #include "okapi/api.hpp"
 #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
 using namespace okapi;
-pros::Motor Catapult(1, false);
-pros::Motor Arm(17, false);
-pros::Motor Intake(13, false);
-pros::Rotation RotationSensor(12);
+pros::Motor Catapult(17, false);
+pros::Motor Arm(20, false);
+pros::Motor Intake(18, false);
+pros::Rotation RotationSensor(19);
 pros::ADIDigitalOut Piston('A');
-pros::Imu imu_sensor(19);
+pros::Imu imu_sensor(10);
 
 /**
  * A callback function for LLEMU's center button.
@@ -99,12 +99,12 @@ void competition_initialize() {}
 // This is PID 
 // !Don't Touch it
 	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()
-	 .withMotors(18, -20, -9, 14) // front right and back right were reversed in order to go forward
+	 .withMotors(13, -16, -14, 11) // front right and back right were reversed in order to go forward
 	 // change P then D first then I only if necessary
 	 // start with P I and D with zero
 	 .withGains( // 0.7, 0, 0.1 results: faster, shaking less violently 0
 		 // 0.5 =
-		 {0.001, 0, 0},	  // Distance controller gains
+		 {0.0006, 0,0},	  // Distance controller gains
 		 {0.001, 0, 0},	  // turn controller gains
 		 {0.0, 0, 0.0000} // Angle controller (helps bot drive straight)
 		 )
@@ -116,7 +116,7 @@ void competition_initialize() {}
 // This set the Catapult's Position
 void setCatapult(){
 	// Set the Rotation Sensor
-	pros::Rotation RotationSensor(12);
+	pros::Rotation RotationSensor(19);
 
 	// * Run until the Catault is at the desired position which is Down
 	while (true)
@@ -296,15 +296,17 @@ void slapBall(){
 
 void autonomous()
 {
-	pros::Rotation RotationSensor(12);
+	pros::Rotation RotationSensor(19);
 
 	pros::lcd::set_text(1, "THIS IS AUTON!");
 
-	// ! Call the redAuton function when needed
-	redAuton();
+	// // ! Call the redAuton function when needed
+	// redAuton();
 
-	// ! Call the blueAuton function when needed
-	// TODO: Code the blueAuton function
+	// // ! Call the blueAuton function when needed
+	// // TODO: Code the blueAuton function
+
+	bot->moveDistance(2_ft);
    
 	// blueAuton();
 }
@@ -325,19 +327,18 @@ void autonomous()
 void opcontrol()
 {
 
-	pros::Motor FrontLeft(18, false);  //counterclockwise
-	pros::Motor FrontRight(20, true);  //! clockwise   I am guessing that it is true in order for rotation  
-	pros::Motor BackLeft(14, true);  //!clockwise 
-	pros::Motor BackRight(9, false);  //counterclockwise 
+	pros::Motor FrontLeft(13, false);  //counterclockwise
+	pros::Motor FrontRight(16, true);  //! clockwise   
+	pros::Motor BackLeft(11, true);  //!clockwise 
+	pros::Motor BackRight(14, false);  //counterclockwise 
 	pros::Motor MidRight(15, false);  //
-	pros::Motor MidLeft(16, false);
-	pros::Motor Catapult(1, false);
-	pros::Motor Arm(17, false);
-	pros::Motor Intake(13, false);
-	pros::Motor Test(5,true);
-	pros::Rotation RotationSensor(12);
+	pros::Motor MidLeft(12, false);
+	pros::Motor Catapult(17, false);
+	pros::Motor Arm(20, false);
+	pros::Motor Intake(18, false);
+	pros::Rotation RotationSensor(19);
 	pros::ADIDigitalOut Piston('A');
-	pros::Imu imu_sensor(19);
+	pros::Imu imu_sensor(10);
 	// imu_sensor.reset();
 
 
@@ -385,21 +386,19 @@ void opcontrol()
 		int right = -yMotion + xMotion; //-power + turn
 		int left = yMotion + xMotion;	// power + turn
 
-		pros::lcd::set_text(3, "Y:" + std::to_string(yMotion));
-		pros::lcd::set_text(4, "X: " + std::to_string(xMotion));
-		pros::lcd::set_text(5, "right" + std::to_string(right));
+		pros::lcd::set_text(3, "Y:" + std::to_string(yMotion)); //Y-motion pos=up neg=down
+		pros::lcd::set_text(4, "X: " + std::to_string(xMotion));//X-motion pos=clockwise  neg=counterclockwise
+		pros::lcd::set_text(5, "right" + std::to_string(right)); 
 		pros::lcd::set_text(6, "left" + std::to_string(left));
-		Test.move(right);   //clockwise when true //counterclockwise when false 
+		// Test.move(right);   //clockwise when true //counterclockwise when false 
 
+		FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
+		BackLeft.move(-left);
+		MidLeft.move(yMotion); //Power
+		MidRight.move(-yMotion); //Power 
+		BackRight.move(right);
+		FrontRight.move(-right);
 
-
-
-		// FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
-		// BackLeft.move(-left);
-		// // MidLeft.move(left);
-		// BackRight.move(right);
-		// FrontRight.move(-right);
-		// MidRight.move(right);
 
 		if (master.get_digital(DIGITAL_R1))
 		{
@@ -443,16 +442,6 @@ void opcontrol()
 			Intake.move_velocity(200);
 			pros::lcd::set_text(5, "Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
 		}
-
-		/* 		if(master.get_digital(DIGITAL_DOWN))
-				{
-					Intake.move_velocity(200);
-					pros::lcd::set_text(5,"Intake Velocity:" + std::to_string(Intake.get_actual_velocity()));
-				}
-				else {
-					Intake.move_velocity(0);
-				} */
-
 		if (master.get_digital(DIGITAL_A))
 		{
 			Piston.set_value(false);
