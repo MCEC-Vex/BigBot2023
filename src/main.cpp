@@ -13,6 +13,8 @@ pros::Motor Intake(2, false);
 pros::Rotation RotationSensor(14);
 pros::ADIDigitalOut Piston('A');
 pros::Imu imu_sensor(1);
+pros::Motor TEST(5);
+
 
 /**
  * A callback function for LLEMU's center button.
